@@ -4,7 +4,7 @@
 NavigationGraph8Net7 is a replacement for NavigationGraph7Net7. 
 
 Since developing NavigationGraph7Net7 I found that I was using a Developer Options setting that badly affected the behavior of the app when exiting the app.
-For a long time, I’ve had the developer option Don’t Keep Activities in the On position on the devices I deploy to. This has the effect of affecting the code that is executed in the Application class, NavigationGraph7ApplicationNet7.cs. In the table below you can see from the LogCat logs that the code in OnActivityDestroyed is not executed if the Don’t keep activities is set to OFF, so consequently NavigationGraph7Net7 was not calling activity.Finish() and therefore my dummy function StopService was never called. As it is a dummy function, no real harm is done with this app, but when you use that code in a real app that contains a bound service then obviously that service is not going to be stopped.
+For a long time, I’ve had the Developer Options Don’t Keep Activities in the On position on the devices I deploy to. This has the effect of affecting the code that is executed in the Application class, NavigationGraph7ApplicationNet7.cs. In the table below you can see from the LogCat logs that the code in OnActivityDestroyed is not executed if the Don’t keep activities is set to OFF, so consequently NavigationGraph7Net7 was not calling activity.Finish() and therefore my dummy function StopService was never called. As it is a dummy function, no real harm is done with this app, but when you use that code in a real app that contains a bound service then obviously that service is not going to be stopped.
 
 Thankfully I was only getting around to using this code in my main application, so this bug has never made it to a production app, but of course, it may have confused anyone who happened to download and study NavigationGraph7Net7 if they had stepped through the code in the debugger. 
 
@@ -13,8 +13,6 @@ I only stumbled upon it because I decided to rebuild a Pixel4a by wiping it, as 
 From the very beginning of using the NavigationComponent, I’d always had problems getting IsFinishing == true. The original fix was to use an OnBackPressedCallback in the HomeFragment. Then use its HandleOnBackPressed method to call Activity.Finish(). That worked well and the service was closed from within the MainActivity’s OnDestroy() where you then would get IsFinishing == true and then call StopService. 
 
 However, we then had to add support for the Predictive Back Gesture. The PBG requires that there should be no enabled OnBackPressedCallback in the HomeFragment or Start Destination Fragment for the PBG to appear. So the onBackPressedCallback was removed from the HomeFragment and that then led to the solution of using the Application Class’s Application.IActivityLifecycleCallbacks, and to the code snippet in the table below using OnActivityDestroyed, which again made IsFinishing == true in the OnDestroy of the MainActivity and StopService was again successfully called.
-
-**The fix for this, when Don’t keep Activities is OFF is to move the code from OnActivityDestroyed to OnActivitySaveInstanceState**
 
 In NavigationGraph7Net7, back in June, I had already commented out all the OnBackPressedCallbacks from each fragment in anticipation of what is likely in Android 14 as I believe as you close each fragment there will also be some sort of animation like a PBG and it will probably also be foiled by any OnBackPressedCallbacks. 
 
