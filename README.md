@@ -24,9 +24,9 @@ protected override void OnSaveInstanceState(Bundle outState)
 
 So we can dispense with the OnActivitySaveInstanceState override in the Application class or even the whole class. I've commented out the RegisterActivityLifecycleCallbacks(this) and the UnregisterActivityLifecycleCallbacks(this) in the Application class so the callbacks are no longer executed.
 
-Please note that we can still see the following in the LogCat logs, but since they are only warnings I think it is probably safe to ignore them.
-
 The end result is the Predictive Back Gesture works as before and StopService is called.
+
+Please note that we can still see the following in the LogCat logs, but since they are only warnings I think it is probably safe to ignore them.
 
 Input channel object '60d57a Splash Screen com.companyname.navigationgraph8net7 (client)' was disposed without first being removed with the input manager!
 
