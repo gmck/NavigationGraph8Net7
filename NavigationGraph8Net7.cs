@@ -23,15 +23,15 @@ namespace com.companyname.navigationgraph8net7
             //DynamicColors.ApplyToActivitiesIfAvailable(this);
             
             // Note that this is only called on a cold start.
-            RegisterActivityLifecycleCallbacks(this);
-            Log.Debug(logTag, logTag+" OnCreate - RegisterActivityLifecycleCallbacks");
+            //RegisterActivityLifecycleCallbacks(this);
+            //Log.Debug(logTag, logTag+" OnCreate - RegisterActivityLifecycleCallbacks");
         }
 
         public override void OnTerminate()
         {
             base.OnTerminate();
-            UnregisterActivityLifecycleCallbacks(this);
-            Log.Debug(logTag, logTag+ "OnTerminate");
+            //UnregisterActivityLifecycleCallbacks(this);
+            //Log.Debug(logTag, logTag+ "OnTerminate");
         }
 
         // This fires before OnActivityDestroyed
@@ -51,17 +51,20 @@ namespace com.companyname.navigationgraph8net7
             Log.Debug(logTag, logTag+" OnActivityCreated");
         }
 
-        public void OnActivityDestroyed(Activity activity)
+        public void OnActivityDestroyed(Activity activity) 
         {
+            // We require it because we have to implement it because of the Interface, however we don't require any code in the body because we are using OnActivitySaveInstanceState below
+
             // Note: This worked fine when we had Developer Settings Apps Don’t keep activities in the ON position, but doesn't fire when Don’t keep activities is OFF
             // Since our users aren't going to have that setting on, so we needed something else and that turned out to be OnActivitySaveInstanceState - see below
 
-            if (!activity.IsChangingConfigurations)
-            {
-                activity.Finish();
-                Log.Debug(logTag, logTag + " OnActivityDestroyed - Calling Activity.Finish()");
-            }
+            //if (!activity.IsChangingConfigurations)
+            //{
+            //    activity.Finish();
+            //    Log.Debug(logTag, logTag + " OnActivityDestroyed - only called because OnActivitySaveInstanceState called Finish() ");
+            //}
 
+            Log.Debug(logTag, logTag + " OnActivityDestroyed - only called because OnActivitySaveInstanceState called Finish() ");
         }
 
         public void OnActivityPaused(Activity activity) 

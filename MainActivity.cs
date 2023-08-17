@@ -150,10 +150,32 @@ namespace com.companyname.navigationgraph8net7
         }
         #endregion
 
+        #region OnSaveInstanceState
+        protected override void OnSaveInstanceState(Bundle outState)
+        {
+            // See earlier comment today in OnDestroy, therefore since OnSaveInstanceState is called before OnDestroy, we can call Finish() here.
+            // This eliminates needing to use the Application.IActivityLifecycleCallbacks in NavigationGraph8ApplicationNet7 class, which causes an additional call to OnActivityDestroyed that isn't required and is picked up by Android in Logcat.
+            // This is more straight forward. We will leave the Application.IActivityLifecycleCallbacks code in NavigationGraph8ApplicationNet7 for now but since it is not required, we have commented out RegisterActivityLifecycleCallbacks(this)
+            // and UnregisterActivityLifecycleCallbacks(this). Result:- the Predictive BackGesture is working, plus the Service is correctly shut down on exit.
+
+            base.OnSaveInstanceState(outState);
+
+            if (!IsChangingConfigurations)
+            {
+                Finish();
+                Log.Debug(logTag, logTag + " OnSaveInstanceState - Calling Finish()");
+            }
+        }
+        #endregion
+
         #region OnDestroy
         protected override void OnDestroy()
         {
-            // Never enters OnDestroy, until it is destroyed
+            // Never enters OnDestroy unless the device is rotated. Not even when exiting the app. Tested again 16/08/2023 and confirmed.
+            // It will come in here if OnActivitySaveIntanceState calls Finish() so IsFinishing will be true in that situation.
+            // OnActivityDestroyed will only be called if OnActivitySaveInstanceState calls Finish(). So effectively OnActivityDestroyed since we already called Finish() does not require any code in its body
+            // See new comments 16/08/2023 above in OnSaveInstanceState.
+
             base.OnDestroy();
 
             if (IsFinishing)
@@ -388,8 +410,7 @@ namespace com.companyname.navigationgraph8net7
         public void StopService()
         {
             // Called from OnDestroy when IsFinishing is true
-            Log.Debug(logTag, logTag+ " StopService - called from OnDestroy");
-            //Toast.MakeText(this, "Service has been stopped.", ToastLength.Long)!.Show();
+            Log.Debug(logTag, logTag+ " StopService - called from MainActivity.OnDestroy");
         }
         #endregion
 

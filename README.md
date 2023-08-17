@@ -1,5 +1,39 @@
 # NavigationGraph8Net7 : net7.0-android33
+**August 17, 2023**
+
+After some more experimenting I have come up with a simpler method of stopping the dummy service. In the previous version we saw from the LogCat logs that we needed to call Activity.Finish() within OnActivitySaveInstanceState of the Application class so that when MainActivty.OnDestroy() was reached IsFinishing would be true so that our dummy StopService method would be called. This was necessary because the OnActivityDestroyed was not being called when the Developer Options Apps - Don’t keep activities was set to OFF. That being the default state for a normal user, it was necessary to find a way to stop the service when the app was exited.
+
+From the charts provided in Google's documentation - https://developer.android.com/guide/components/activities/intro-activities we can see that Activity's OnDestroy states - **The system invokes this callback before an activity is destroyed**. 
+
+However, in a Single Activity application using the NavigationComponent we can see that this is not true. If you put a breakpoint on OnDestroy of the MainActivity you'll see that the only time that breakpoint is hit is when the device is rotated. When exiting the app via a back gesture, the debugger does not break at the MainActivity's OnDestroy, the app just ends. This can be partially explained when you look further into the documentation under **Processes and App Lifecycle** with the following information ***Be aware that onDestroy() is not guaranteed to be called in the case that a process is killed by the system.*** Typical Google documentation, mentioned but not expanded on. It does though perfectly describe this example.
+
+In this update we now have an OnSaveInstanceState override in the MainActivity. This is called when the app is exited via a back gesture. 
+
+```c#
+protected override void OnSaveInstanceState(Bundle outState)
+{
+    base.OnSaveInstanceState(outState);
+
+    if (!IsChangingConfigurations)
+    {
+        Finish();
+        Log.Debug(logTag, logTag + " OnSaveInstanceState - Calling Finish()");
+    }
+}
+```
+
+So we can dispense with the OnActivitySaveInstanceState override in the Application class or even the whole class. I've commented out the RegisterActivityLifecycleCallbacks(this) and the UnregisterActivityLifecycleCallbacks(this) in the Application class so the callbacks are no longer executed.
+
+Please note that we can still see the following in the LogCat logs, but since they are only warnings I think it is probably safe to ignore them.
+
+The end result is the Predictive Back Gesture works as before and StopService is called.
+
+Input channel object '60d57a Splash Screen com.companyname.navigationgraph8net7 (client)' was disposed without first being removed with the input manager!
+
+Input channel object '60a1c5d com.companyname.navigationgraph8net7/crc640cebeb752226fc06.MainActivity (client)' was disposed without first being removed with the input manager!
+
 **August 13, 2023**
+
 
 NavigationGraph8Net7 is a replacement for NavigationGraph7Net7. 
 
@@ -30,7 +64,7 @@ I checked with the Android Issue tracker, and note that the report is still unre
 **Developer Options Apps - Don’t keep activities 	ON**
 
 App has the following code in OnActivityDestroyed
-```
+```c#
 if (!activity.IsChangingConfigurations)
 {
 	activity.Finish();
